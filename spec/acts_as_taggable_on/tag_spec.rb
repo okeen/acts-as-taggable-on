@@ -208,4 +208,32 @@ describe ActsAsTaggableOn::Tag do
       end
     end
   end
+
+  describe "parentship validation" do
+    context "with children categories" do
+      before do
+        @grandpa_tag       = ActsAsTaggableOn::Tag.create(:name => 'granpa')
+
+        @parent_tag        = ActsAsTaggableOn::Tag.create(:name => 'dad')
+        @parent_tag.parent = @grandpa_tag
+        @parent_tag.save
+
+        @child_tag         = ActsAsTaggableOn::Tag.create(:name => 'dad')
+        @child_tag.parent  = @parent_tag
+        @child_tag.save
+      end
+
+      it "should not allow setting as parent one of the children categories" do
+        @parent_tag.parent = @child_tag
+        @parent_tag.errors.count.should eq 1
+        @parent_tag.errors[:parent_id].should eq I18n.t("errors.categories.should_not_have_as_parent_one_of_his_children")
+      end
+
+      it "should not allow setting as himself as parent" do
+        @parent_tag.parent = @parent_tag
+        @parent_tag.errors.count.should eq 1
+      end
+    end
+  end
+
 end

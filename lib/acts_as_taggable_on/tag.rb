@@ -8,6 +8,8 @@ module ActsAsTaggableOn
 
     has_many :taggings, :dependent => :destroy, :class_name => 'ActsAsTaggableOn::Tagging'
 
+    belongs_to :parent, class_name: ActsAsTaggableOn::Tag
+
     ### VALIDATIONS:
 
     validates_presence_of :name
@@ -43,6 +45,10 @@ module ActsAsTaggableOn
 
     def self.named_like_any(list)
       where(list.map { |tag| sanitize_sql(["name #{like_operator} ? ESCAPE '!'", "%#{escape_like(tag.to_s)}%"]) }.join(" OR "))
+    end
+
+    def self.top_parents
+      where(parent_id: nil)
     end
 
     ### CLASS METHODS:
@@ -84,6 +90,15 @@ module ActsAsTaggableOn
       read_attribute(:count).to_i
     end
 
+    def children
+      return [] unless self.persisted?
+      ActsAsTaggableOn::Tag.where(parent_id: self.id).all
+    end
+
+    def all_descendant
+      [self.children.to_a + self.children.to_a.map(&:all_descendant)].flatten
+    end
+
     class << self
       private
 
@@ -95,5 +110,17 @@ module ActsAsTaggableOn
         /mysql/ === ActiveRecord::Base.connection_config[:adapter] ? "BINARY " : nil
       end
     end
+  end
+
+  private
+
+  def should_not_have_as_parent_one_of_his_children
+    children_ids = self.all_descendant.map &:id
+    errors[:parent_id] << I18n.t("errors.tags.should_not_have_as_parent_one_of_his_children") if children_ids.include?(self.parent_id)
+  end
+
+  def should_not_have_as_parent_himself
+    return if self.parent_id.blank?
+    errors[:parent_id] << I18n.t("errors.tags.should_not_have_as_parent_himself") if self.id == self.parent_id
   end
 end

@@ -16,6 +16,8 @@ class ActsAsTaggableOnMigration < ActiveRecord::Migration
       # length for MyISAM table type: http://bit.ly/vgW2Ql
       t.string :context, :limit => 128
 
+      t.references :parent, index: true
+
       t.datetime :created_at
     end
 
