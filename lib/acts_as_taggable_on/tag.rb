@@ -15,6 +15,8 @@ module ActsAsTaggableOn
     validates_presence_of :name
     validates_uniqueness_of :name, :if => :validates_name_uniqueness?
     validates_length_of :name, :maximum => 255
+    validate :should_not_have_as_parent_one_of_his_children
+    validate :should_not_have_as_parent_himself
 
     # monkey patch this method if don't need name uniqueness validation
     def validates_name_uniqueness?

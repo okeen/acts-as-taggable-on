@@ -2,6 +2,7 @@ class ActsAsTaggableOnMigration < ActiveRecord::Migration
   def self.up
     create_table :tags do |t|
       t.string :name
+      t.references :parent, index: true
     end
 
     create_table :taggings do |t|
@@ -15,8 +16,6 @@ class ActsAsTaggableOnMigration < ActiveRecord::Migration
       # Limit is created to prevent MySQL error on index
       # length for MyISAM table type: http://bit.ly/vgW2Ql
       t.string :context, :limit => 128
-
-      t.references :parent, index: true
 
       t.datetime :created_at
     end
