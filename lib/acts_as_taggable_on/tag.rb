@@ -114,7 +114,7 @@ module ActsAsTaggableOn
     end
   end
 
-  private
+  protected
 
   def should_not_have_as_parent_one_of_his_children
     children_ids = self.all_descendant.map &:id
