@@ -112,15 +112,17 @@ module ActsAsTaggableOn
         /mysql/ === ActiveRecord::Base.connection_config[:adapter] ? "BINARY " : nil
       end
     end
-  end
 
-  def should_not_have_as_parent_one_of_his_children
-    children_ids = self.all_descendant.map &:id
-    errors[:parent_id] << I18n.t("errors.tags.should_not_have_as_parent_one_of_his_children") if children_ids.include?(self.parent_id)
-  end
+    protected
 
-  def should_not_have_as_parent_himself
-    return if self.parent_id.blank?
-    errors[:parent_id] << I18n.t("errors.tags.should_not_have_as_parent_himself") if self.id == self.parent_id
+    def should_not_have_as_parent_one_of_his_children
+      children_ids = self.all_descendant.map &:id
+      errors[:parent_id] << I18n.t("errors.tags.should_not_have_as_parent_one_of_his_children") if children_ids.include?(self.parent_id)
+    end
+
+    def should_not_have_as_parent_himself
+      return if self.parent_id.blank?
+      errors[:parent_id] << I18n.t("errors.tags.should_not_have_as_parent_himself") if self.id == self.parent_id
+    end
   end
 end
